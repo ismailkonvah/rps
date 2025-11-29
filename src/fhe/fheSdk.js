@@ -99,7 +99,14 @@ export function serializeEncryptedData(encryptedData) {
       return encryptedData.serialize();
     }
 
-    // If it has encryptedData property, try to serialize that
+    // If it has inputProof property (SDK v0.3.0+), return that
+    if (encryptedData.inputProof) {
+      if (encryptedData.inputProof instanceof Uint8Array) {
+        return encryptedData.inputProof;
+      }
+    }
+
+    // If it has encryptedData property (legacy), try to serialize that
     if (encryptedData.encryptedData) {
       if (encryptedData.encryptedData instanceof Uint8Array) {
         return encryptedData.encryptedData;
