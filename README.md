@@ -1,7 +1,7 @@
-# Private Rock–Paper–Scissors — End-to-End Setup (Sepolia)
+# Rock–Paper–Scissors — End-to-End Setup (Sepolia)
 
 ## Overview
-This project implements a Private Rock Paper Scissors game leveraging Fully Homomorphic Encryption (FHE) concepts for privacy, integrated with Web3 technologies for decentralized gameplay. The frontend is built with React, `wagmi`, and WalletConnect for seamless wallet interactions, while the backend consists of a Solidity smart contract and an off-chain finalizer script.
+This project implements a Rock Paper Scissors game leveraging Fully Homomorphic Encryption (FHE) concepts for privacy, integrated with Web3 technologies for decentralized gameplay. The frontend is built with React, `wagmi`, and WalletConnect for seamless wallet interactions, while the backend consists of a Solidity smart contract and an off-chain finalizer script.
 
 ## Table of Contents
 

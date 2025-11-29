@@ -14,7 +14,7 @@ function App() {
           <div className="container mx-auto px-4 py-8">
             <header className="text-center mb-12">
               <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
-                🔒 Private Rock Paper Scissors
+                Rock Paper Scissors
               </h1>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                 Play Rock Paper Scissors with fully encrypted moves using Fully Homomorphic Encryption (FHE)

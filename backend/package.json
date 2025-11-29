@@ -1,7 +1,7 @@
 {
     "name": "private-rps-backend",
     "version": "1.0.0",
-    "description": "Backend for Private RPS with FHEVM",
+    "description": "Backend for RPS with FHEVM",
     "scripts": {
         "deploy": "npx hardhat run scripts/deploy.js --network sepolia",
         "finalizer": "node offchain/finalizer.js"

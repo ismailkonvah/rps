@@ -97,7 +97,7 @@ function computeWinner(move1, move2) {
 }
 
 async function main() {
-  console.log("=== Private RPS Finalizer ===");
+  console.log("=== RPS Finalizer ===");
   console.log("RPC URL:", RPC_URL);
   console.log("Contract Address:", CONTRACT_ADDRESS);
 

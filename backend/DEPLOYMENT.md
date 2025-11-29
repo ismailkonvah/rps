@@ -1,4 +1,4 @@
-# Private RPS Backend Deployment Guide
+# RPS Backend Deployment Guide
 
 ## Quick Start
 
@@ -100,7 +100,7 @@ node offchain/finalizer.js
 
 **Expected Output:**
 ```
-=== Private RPS Finalizer ===
+=== RPS Finalizer ===
 RPC URL: https://eth-sepolia.g.alchemy.com/v2/...
 Contract Address: 0x...
 Admin wallet address: 0x...
