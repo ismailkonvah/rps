@@ -1,7 +1,7 @@
 // src/fhe/fheSdk.js
 // Zama FHEVM SDK integration for Sepolia testnet
 
-import { createInstance, SepoliaConfig } from '@zama-fhe/relayer-sdk/web';
+import { createInstance, SepoliaConfig, initSDK } from '@zama-fhe/relayer-sdk/web';
 
 let fhevmInstance = null;
 
@@ -20,7 +20,10 @@ export async function initFHEVM() {
   }
 
   try {
-    console.log('Initializing FHEVM instance with SepoliaConfig...');
+    console.log('Initializing FHEVM SDK...');
+    // Initialize WASM module first
+    await initSDK();
+    console.log('SDK initialized, creating instance with SepoliaConfig...');
 
     fhevmInstance = await createInstance(SepoliaConfig);
     console.log('FHEVM instance initialized successfully');
