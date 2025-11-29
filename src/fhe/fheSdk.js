@@ -64,14 +64,18 @@ export async function encryptMove(value, contractAddress, userAddress) {
   try {
     console.log(`Encrypting move: ${value} for contract: ${contractAddress}`);
 
-    // Encrypt the value using FHEVM SDK
-    const encryptedValue = await instance.encrypt_uint8(value);
+    // Encrypt the value using FHEVM SDK v0.3.0+ API
+    // 1. Create encrypted input builder
+    const input = instance.createEncryptedInput(contractAddress, userAddress);
 
-    // The SDK returns an object with encrypted data and proof
-    // Format depends on SDK version, typically: { encryptedData, proof }
+    // 2. Add the value (uint8)
+    input.add8(value);
+
+    // 3. Encrypt and generate proof
+    const encryptedResult = await input.encrypt();
+
     console.log('Move encrypted successfully');
-
-    return encryptedValue;
+    return encryptedResult;
   } catch (error) {
     console.error('Encryption failed:', error);
     throw new Error(`Failed to encrypt move: ${error.message}`);
