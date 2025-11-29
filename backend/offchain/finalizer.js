@@ -4,7 +4,7 @@
 // Usage: set env RPC_URL, ADMIN_PRIVATE_KEY, CONTRACT_ADDRESS in .env, then: node finalizer.js
 
 const { ethers } = require("ethers");
-const { createInstance, SepoliaConfig } = require("@zama-fhe/relayer-sdk/node");
+const { createInstance, ZamaEthereumConfig } = require("@zama-fhe/relayer-sdk/node");
 const artifact = require("../artifacts/contracts/PrivateRPSFHE.sol/PrivateRPSFHE.json");
 require("dotenv").config();
 
@@ -21,6 +21,7 @@ let fhevmInstance = null;
 
 /**
  * Initialize FHEVM instance for backend decryption
+ * Uses ZamaEthereumConfig with all correct Sepolia settings
  */
 async function initFHEVM() {
   if (fhevmInstance) {
@@ -28,8 +29,8 @@ async function initFHEVM() {
   }
 
   try {
-    console.log("Initializing FHEVM instance with SepoliaConfig...");
-    fhevmInstance = await createInstance(SepoliaConfig);
+    console.log("Initializing FHEVM instance with ZamaEthereumConfig...");
+    fhevmInstance = await createInstance(ZamaEthereumConfig);
     console.log("FHEVM instance initialized successfully");
     return fhevmInstance;
   } catch (error) {

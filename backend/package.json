@@ -7,7 +7,7 @@
         "finalizer": "node offchain/finalizer.js"
     },
     "dependencies": {
-        "@zama-fhe/relayer-sdk": "^0.2.0",
+        "@zama-fhe/relayer-sdk": "^0.3.0-5",
         "dotenv": "^16.0.0",
         "ethers": "^6.0.0"
     },

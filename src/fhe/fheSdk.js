@@ -1,16 +1,17 @@
 // src/fhe/fheSdk.js
 // Zama FHEVM SDK integration for Sepolia testnet
 
-import { createInstance, SepoliaConfig } from '@zama-fhe/relayer-sdk/web';
+import { createInstance, ZamaEthereumConfig } from '@zama-fhe/relayer-sdk/web';
 
 let fhevmInstance = null;
 
 /**
  * Initialize FHEVM instance for Sepolia testnet
- * Uses SepoliaConfig which automatically configures:
+ * Uses ZamaEthereumConfig which automatically configures:
  * - Gateway URL for decryption
  * - KMS verifier contract
  * - ACL contract
+ * - Relayer URL
  * - All Sepolia-specific FHEVM settings
  */
 export async function initFHEVM() {
@@ -19,8 +20,9 @@ export async function initFHEVM() {
   }
 
   try {
-    console.log('Initializing FHEVM instance with SepoliaConfig...');
-    fhevmInstance = await createInstance(SepoliaConfig);
+    console.log('Initializing FHEVM instance with ZamaEthereumConfig...');
+
+    fhevmInstance = await createInstance(ZamaEthereumConfig);
     console.log('FHEVM instance initialized successfully');
     return fhevmInstance;
   } catch (error) {

@@ -99,8 +99,8 @@ importers:
         specifier: ^5.1.11
         version: 5.1.11(cd5c1b3100368501244c70f90abb0ea7)
       '@zama-fhe/relayer-sdk':
-        specifier: ^0.2.0
-        version: 0.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        specifier: ^0.3.0-5
+        version: 0.3.0-6(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -1964,9 +1964,9 @@ packages:
   '@web3modal/wallet@5.1.11':
     resolution: {integrity: sha512-/ooQZXK1h7LGBUemebldYPAV2oJAgxkgSiCMoHWynhuS0LO3BzhOhGL+jV19w4iU81bS1GSNFTxYT9LL6Scesw==}
 
-  '@zama-fhe/relayer-sdk@0.2.0':
-    resolution: {integrity: sha512-phgpQgqdpIDYKihNdBt3JQtvkKjZpG5a2l+bwh5JJvvUuLG1jkoHbd1LGWvtxd7rF54TIAyupIEIMM0C1Qj1xw==}
-    engines: {node: '>=20'}
+  '@zama-fhe/relayer-sdk@0.3.0-6':
+    resolution: {integrity: sha512-lrnor1yIsC2ePHWo5XCxSsFkBr8JuaI7FvRk1azpglxkBVNECvuMD23ky04A8F6k53NDBvlh71MvHI+qvAOaQQ==}
+    engines: {node: '>=22'}
     hasBin: true
 
   abitype@1.0.8:
@@ -3139,11 +3139,11 @@ packages:
   node-releases@2.0.19:
     resolution: {integrity: sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw==}
 
-  node-tfhe@1.3.0:
-    resolution: {integrity: sha512-BhqHFH1sFp9bziPfar2MqtZI1NT+fsqt6w+q6l1bUFn7ENTwGbjZqZIPGuPKxgnWF6iqMhwVG5IYpKpAwil6oA==}
+  node-tfhe@1.4.0-alpha.3:
+    resolution: {integrity: sha512-oTcWL0OFA6t6BhScmDiGQ3VA8tU8T3EXCzIzpNxQxcuJDgQtiUF5CV6dgJLOrpWck4KCp1Bo/xLhv07uwn3q6Q==}
 
-  node-tkms@0.11.1:
-    resolution: {integrity: sha512-AWciFzfvjEYECHiAJXv1KLz6K28fX/0DDlaktAbslF2XpaIGsc9sCKjYPJHubrJfNrtUWUI5qfqhJOP3BD/mcw==}
+  node-tkms@0.12.5:
+    resolution: {integrity: sha512-1GZf8DtZGSqNKT/K4swcNytwhChYXUkKXg/rJTc66FbJ3VwjPbDDheHlp5kEBw0tFQO+dJ0lWsm+NRtafucFYg==}
 
   normalize-path@3.0.0:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
@@ -3690,8 +3690,8 @@ packages:
   text-encoding-utf-8@1.0.2:
     resolution: {integrity: sha512-8bw4MY9WjdsD2aMtO0OzOCY3pXGYNx2d2FfHRVUKkiCPDWjKuOlhLVASS+pD7VkLTVjW268LYJHwsnPFlBpbAg==}
 
-  tfhe@1.3.0:
-    resolution: {integrity: sha512-SYySiMB/hCPJmy3K8RliVYCN4mV/p5+EJozaYfXTS0UEl3aS+1b71XqGfI1KDucYHelVS1iWgF7+uO2wNqQQ/g==}
+  tfhe@1.4.0-alpha.3:
+    resolution: {integrity: sha512-xdla7hi2WzLFIdAx2/ihRZ/bKlKcgDDabTJGtoqp1E5oqhLM1PzTXsJE0p7tW8+ebrvxiMGfbgMAWnU3f2ZAIQ==}
 
   thread-stream@0.15.2:
     resolution: {integrity: sha512-UkEhKIg2pD+fjkHQKyJO3yoIvAP3N6RlNFt2dUhcS1FGvCD1cQa1M/PGknCLFIyZdtJOWQjejp7bdNqmN7zwdA==}
@@ -3703,8 +3703,8 @@ packages:
     resolution: {integrity: sha512-mEwzpUgrLySlveBwEVDMKk5B57bhLPYovRfPAXD5gA/98Opn0rCDj3GtLwFvCvH5RK9uPCExUROW5NjDwvqkxw==}
     engines: {node: '>=12.0.0'}
 
-  tkms@0.11.1:
-    resolution: {integrity: sha512-FNpnwZKsUUMs0q4aAwZatpw7fz1UBG9cdh3LZYgWYN3rvouS+v4zysB642dG8J35KgNF6WCFAzTyRKagdL8x7g==}
+  tkms@0.12.5:
+    resolution: {integrity: sha512-FuZYwBGEmdDAQ8S4mmq0o9SBhNQWczqOTX8L+lHLmPcLT7KCLlof6jYyXlp2/8IIFLnZ4gwEzLeWBYaW05q3AA==}
 
   to-buffer@1.2.2:
     resolution: {integrity: sha512-db0E3UJjcFhpDhAF4tLo03oli3pwl3dbnzXOUIlRKrp+ldk/VUxzpWYZENsw2SZiuBjHAk7DfB0VU7NKdpb6sw==}
@@ -7163,16 +7163,16 @@ snapshots:
       '@web3modal/polyfills': 5.1.11
       zod: 3.22.4
 
-  '@zama-fhe/relayer-sdk@0.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
+  '@zama-fhe/relayer-sdk@0.3.0-6(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
       commander: 14.0.2
       ethers: 6.15.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       fetch-retry: 6.0.0
       keccak: 3.0.4
-      node-tfhe: 1.3.0
-      node-tkms: 0.11.1
-      tfhe: 1.3.0
-      tkms: 0.11.1
+      node-tfhe: 1.4.0-alpha.3
+      node-tkms: 0.12.5
+      tfhe: 1.4.0-alpha.3
+      tkms: 0.12.5
       wasm-feature-detect: 1.8.0
     transitivePeerDependencies:
       - bufferutil
@@ -8329,9 +8329,9 @@ snapshots:
 
   node-releases@2.0.19: {}
 
-  node-tfhe@1.3.0: {}
+  node-tfhe@1.4.0-alpha.3: {}
 
-  node-tkms@0.11.1: {}
+  node-tkms@0.12.5: {}
 
   normalize-path@3.0.0: {}
 
@@ -8943,7 +8943,7 @@ snapshots:
   text-encoding-utf-8@1.0.2:
     optional: true
 
-  tfhe@1.3.0: {}
+  tfhe@1.4.0-alpha.3: {}
 
   thread-stream@0.15.2:
     dependencies:
@@ -8956,7 +8956,7 @@ snapshots:
       fdir: 6.4.4(picomatch@4.0.2)
       picomatch: 4.0.2
 
-  tkms@0.11.1: {}
+  tkms@0.12.5: {}
 
   to-buffer@1.2.2:
     dependencies:

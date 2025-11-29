@@ -17,10 +17,9 @@ This project implements a Rock Paper Scissors game leveraging Fully Homomorphic 
     *   [5.1. Running the Frontend](#51-running-the-frontend)
     *   [5.2. Deploying the Smart Contract](#52-deploying-the-smart-contract)
     *   [5.3. Running the Backend Finalizer](#53-running-the-backend-finalizer)
-6.  [Contract Details](#6-contract-details)
-7.  [FHE (Mocked)](#7-fhe-mocked)
-8.  [Troubleshooting](#8-troubleshooting)
-9.  [Future Enhancements](#9-future-enhancements)
+6.  [Architecture](#6-architecture)
+7.  [Troubleshooting](#7-troubleshooting)
+8.  [Future Enhancements](#8-future-enhancements)
 
 ## 1. Project Overview
 
