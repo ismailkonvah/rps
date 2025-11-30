@@ -35,7 +35,7 @@ Unlike traditional "commit-reveal" schemes where players must manually reveal th
 
 ```mermaid
 graph TB
-    subgraph Client [Frontend (React)]
+    subgraph Client [Frontend React]
         A[Player 1] -->|Select Move| B[Encrypt Locally]
         B -->|Encrypted Move| C[Submit Transaction]
     end
