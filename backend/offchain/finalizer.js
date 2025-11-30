@@ -58,7 +58,7 @@ async function decryptMove(handle, signer) {
 
     const signature = await signer.signTypedData(
       eip712.domain,
-      { Reencrypt: eip712.types.Reencrypt },
+      eip712.types,  // Pass types directly, not wrapped
       eip712.message
     );
 
