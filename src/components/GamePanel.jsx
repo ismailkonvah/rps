@@ -4,6 +4,7 @@ import { ethers } from "ethers";
 import { useAccount } from "wagmi";
 import ContractAbi from "../contract/PrivateRPSFHE.json";
 import { initFHEVM, encryptMove, serializeEncryptedData } from "../fhe/fheSdk";
+import HowToPlay from "./HowToPlay";
 
 const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS;
 
@@ -46,18 +47,28 @@ export default function GamePanel() {
     const ctr = new ethers.Contract(CONTRACT_ADDRESS, ContractAbi, signer);
     setContract(ctr);
 
-    // Listen for finalization events
-    // Listen for finalization events (might fail on some RPCs)
-    // Commented out to prevent "eth_newFilter not available" errors on free RPCs
-    /*
+    // Listen for NeedsOffchainFinalize event
     try {
-      ctr.on("GameFinalized", (gid, winnerAddr, result) => {
-        setStatus(`Game #${gid.toString()} finalized: ${result} (${winnerAddr})`);
+      ctr.on("NeedsOffchainFinalize", (gid, encMove1, encMove2) => {
+        if (gid.toString() === gameId) {
+          setStatus(`⏳ Both players submitted! Finalizing game #${gid.toString()}...`);
+        }
       });
     } catch (e) {
-      console.warn("Could not subscribe to events (RPC limitation):", e);
+      console.warn("Could not subscribe to NeedsOffchainFinalize (RPC limitation):", e);
     }
-    */
+
+    // Listen for GameFinalized event
+    try {
+      ctr.on("GameFinalized", (gid, winnerAddr, result) => {
+        if (gid.toString() === gameId) {
+          const resultText = result === 0 ? "Draw" : result === 1 ? "Player 1 Wins" : "Player 2 Wins";
+          setStatus(`🎉 Game #${gid.toString()} finalized: ${resultText}!`);
+        }
+      });
+    } catch (e) {
+      console.warn("Could not subscribe to GameFinalized (RPC limitation):", e);
+    }
 
     setStatus("Connected: " + addr);
   }
@@ -145,108 +156,111 @@ export default function GamePanel() {
   };
 
   return (
-    <div style={{ width: 420, padding: 24, borderRadius: 16, background: 'white', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', margin: '40px auto' }}>
-      <h2 style={{ margin: 0 }}>🔒 Private Rock–Paper–Scissors</h2>
-      <p style={{ color: '#374151' }}>{status}</p>
+    <>
+      <HowToPlay />
+      <div style={{ width: 420, padding: 24, borderRadius: 16, background: 'white', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', margin: '40px auto' }}>
+        <h2 style={{ margin: 0 }}>🔒 Private Rock–Paper–Scissors</h2>
+        <p style={{ color: '#374151' }}>{status}</p>
 
-      {!account ? (
-        <button onClick={connectWallet} style={{ padding: 10, background: '#7c3aed', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' }}>Connect Wallet</button>
-      ) : (
-        <>
-          {/* Opponent Mode Selection */}
-          <div style={{ marginTop: 16, marginBottom: 16 }}>
-            <p style={{ marginBottom: 8, fontWeight: 600 }}>Choose opponent:</p>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button
-                onClick={() => setOpponentMode("player")}
-                style={{
-                  flex: 1,
-                  padding: 10,
-                  background: opponentMode === "player" ? '#7c3aed' : '#f3f4f6',
-                  color: opponentMode === "player" ? 'white' : 'black',
-                  border: 'none',
-                  borderRadius: 8,
-                  cursor: 'pointer',
-                  fontWeight: 600
-                }}
-              >
-                👥 Play with Player
-              </button>
-              <button
-                onClick={() => setOpponentMode("computer")}
-                style={{
-                  flex: 1,
-                  padding: 10,
-                  background: opponentMode === "computer" ? '#7c3aed' : '#f3f4f6',
-                  color: opponentMode === "computer" ? 'white' : 'black',
-                  border: 'none',
-                  borderRadius: 8,
-                  cursor: 'pointer',
-                  fontWeight: 600
-                }}
-              >
-                🤖 Play with Computer
-              </button>
-            </div>
-          </div>
-
-          {opponentMode === "player" ? (
-            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-              <button onClick={createGame} style={{ padding: 8, background: '#10b981', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Create Game</button>
-              <input value={gameId} onChange={e => setGameId(e.target.value)} placeholder="Game ID" style={{ flex: 1, padding: 8, border: '1px solid #d1d5db', borderRadius: 6 }} />
-              <button onClick={joinGame} style={{ padding: 8, background: '#3b82f6', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Join Game</button>
-            </div>
-          ) : (
-            <div style={{ marginTop: 10 }}>
-              <button onClick={createGame} style={{ padding: 10, width: '100%', background: '#10b981', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>
-                🎮 Start Game vs Computer
-              </button>
-              {gameId && <p style={{ textAlign: 'center', margin: '8px 0', fontWeight: 'bold' }}>Current Game ID: {gameId}</p>}
-              {computerMove !== null && (
-                <div style={{ marginTop: 12, padding: 12, background: '#fef3c7', borderRadius: 8 }}>
-                  <p style={{ margin: 0, fontSize: 14 }}>Computer chose: {getMoveEmoji(computerMove)}</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          <div style={{ marginTop: 16 }}>
-            <p style={{ fontWeight: 600, marginBottom: 8 }}>Select your move:</p>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => setMove(0)} style={{ padding: 12, flex: 1, background: move === 0 ? '#111827' : '#f3f4f6', color: move === 0 ? 'white' : 'black', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 16, fontWeight: 600 }}>
-                ✊<br />Rock
-              </button>
-              <button onClick={() => setMove(1)} style={{ padding: 12, flex: 1, background: move === 1 ? '#111827' : '#f3f4f6', color: move === 1 ? 'white' : 'black', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 16, fontWeight: 600 }}>
-                ✋<br />Paper
-              </button>
-              <button onClick={() => setMove(2)} style={{ padding: 12, flex: 1, background: move === 2 ? '#111827' : '#f3f4f6', color: move === 2 ? 'white' : 'black', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 16, fontWeight: 600 }}>
-                ✌️<br />Scissors
-              </button>
+        {!account ? (
+          <button onClick={connectWallet} style={{ padding: 10, background: '#7c3aed', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' }}>Connect Wallet</button>
+        ) : (
+          <>
+            {/* Opponent Mode Selection */}
+            <div style={{ marginTop: 16, marginBottom: 16 }}>
+              <p style={{ marginBottom: 8, fontWeight: 600 }}>Choose opponent:</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => setOpponentMode("player")}
+                  style={{
+                    flex: 1,
+                    padding: 10,
+                    background: opponentMode === "player" ? '#7c3aed' : '#f3f4f6',
+                    color: opponentMode === "player" ? 'white' : 'black',
+                    border: 'none',
+                    borderRadius: 8,
+                    cursor: 'pointer',
+                    fontWeight: 600
+                  }}
+                >
+                  👥 Play with Player
+                </button>
+                <button
+                  onClick={() => setOpponentMode("computer")}
+                  style={{
+                    flex: 1,
+                    padding: 10,
+                    background: opponentMode === "computer" ? '#7c3aed' : '#f3f4f6',
+                    color: opponentMode === "computer" ? 'white' : 'black',
+                    border: 'none',
+                    borderRadius: 8,
+                    cursor: 'pointer',
+                    fontWeight: 600
+                  }}
+                >
+                  🤖 Play with Computer
+                </button>
+              </div>
             </div>
 
-            <div style={{ marginTop: 12 }}>
-              <button
-                onClick={submitMove}
-                disabled={move === null}
-                style={{
-                  padding: 12,
-                  width: '100%',
-                  background: move !== null ? '#7c3aed' : '#d1d5db',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 8,
-                  cursor: move !== null ? 'pointer' : 'not-allowed',
-                  fontWeight: 600,
-                  fontSize: 16
-                }}
-              >
-                🔐 Submit Encrypted Move
-              </button>
+            {opponentMode === "player" ? (
+              <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                <button onClick={createGame} style={{ padding: 8, background: '#10b981', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Create Game</button>
+                <input value={gameId} onChange={e => setGameId(e.target.value)} placeholder="Game ID" style={{ flex: 1, padding: 8, border: '1px solid #d1d5db', borderRadius: 6 }} />
+                <button onClick={joinGame} style={{ padding: 8, background: '#3b82f6', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Join Game</button>
+              </div>
+            ) : (
+              <div style={{ marginTop: 10 }}>
+                <button onClick={createGame} style={{ padding: 10, width: '100%', background: '#10b981', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>
+                  🎮 Start Game vs Computer
+                </button>
+                {gameId && <p style={{ textAlign: 'center', margin: '8px 0', fontWeight: 'bold' }}>Current Game ID: {gameId}</p>}
+                {computerMove !== null && (
+                  <div style={{ marginTop: 12, padding: 12, background: '#fef3c7', borderRadius: 8 }}>
+                    <p style={{ margin: 0, fontSize: 14 }}>Computer chose: {getMoveEmoji(computerMove)}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div style={{ marginTop: 16 }}>
+              <p style={{ fontWeight: 600, marginBottom: 8 }}>Select your move:</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => setMove(0)} style={{ padding: 12, flex: 1, background: move === 0 ? '#111827' : '#f3f4f6', color: move === 0 ? 'white' : 'black', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 16, fontWeight: 600 }}>
+                  ✊<br />Rock
+                </button>
+                <button onClick={() => setMove(1)} style={{ padding: 12, flex: 1, background: move === 1 ? '#111827' : '#f3f4f6', color: move === 1 ? 'white' : 'black', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 16, fontWeight: 600 }}>
+                  ✋<br />Paper
+                </button>
+                <button onClick={() => setMove(2)} style={{ padding: 12, flex: 1, background: move === 2 ? '#111827' : '#f3f4f6', color: move === 2 ? 'white' : 'black', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 16, fontWeight: 600 }}>
+                  ✌️<br />Scissors
+                </button>
+              </div>
+
+              <div style={{ marginTop: 12 }}>
+                <button
+                  onClick={submitMove}
+                  disabled={move === null}
+                  style={{
+                    padding: 12,
+                    width: '100%',
+                    background: move !== null ? '#7c3aed' : '#d1d5db',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 8,
+                    cursor: move !== null ? 'pointer' : 'not-allowed',
+                    fontWeight: 600,
+                    fontSize: 16
+                  }}
+                >
+                  🔐 Submit Encrypted Move
+                </button>
+              </div>
             </div>
-          </div>
-        </>
-      )}
-    </div>
+          </>
+        )}
+      </div>
+    </>
   );
 }
 
