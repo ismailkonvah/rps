@@ -53,7 +53,8 @@ async function decryptMove(handle, signer) {
 
     // Generate EIP-712 signature for Gateway decryption request
     const { publicKey, privateKey } = instance.generateKeypair();
-    const eip712 = instance.createEIP712(publicKey, CONTRACT_ADDRESS);
+    const eip712 = instance.createEIP712(publicKey, [CONTRACT_ADDRESS]); // Pass as array
+
 
     const signature = await signer.signTypedData(
       eip712.domain,
