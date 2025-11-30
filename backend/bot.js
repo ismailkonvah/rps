@@ -3,7 +3,7 @@
 // Usage: node bot.js
 
 const { ethers } = require("ethers");
-const { createInstance, SepoliaConfig, initSDK } = require("@zama-fhe/relayer-sdk/node");
+const { createInstance, SepoliaConfig } = require("@zama-fhe/relayer-sdk/node");
 const artifact = require("./artifacts/contracts/PrivateRPSFHE.sol/PrivateRPSFHE.json");
 require("dotenv").config();
 
@@ -28,7 +28,6 @@ async function initFHEVM() {
 
     try {
         console.log("Initializing FHEVM instance...");
-        await initSDK();
         fhevmInstance = await createInstance(SepoliaConfig);
         console.log("✅ FHEVM instance initialized");
         return fhevmInstance;

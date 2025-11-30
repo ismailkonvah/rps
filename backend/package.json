@@ -3,13 +3,15 @@
     "version": "1.0.0",
     "description": "Backend for RPS with FHEVM",
     "scripts": {
+        "start": "node offchain/finalizer.js",
         "deploy": "npx hardhat run scripts/deploy.js --network sepolia",
-        "finalizer": "node offchain/finalizer.js"
+        "finalizer": "node offchain/finalizer.js",
+        "bot": "node bot.js"
     },
     "dependencies": {
-        "@zama-fhe/relayer-sdk": "^0.3.0-5",
+        "@zama-fhe/relayer-sdk": "^0.3.0-6",
         "dotenv": "^16.0.0",
-        "ethers": "^6.0.0"
+        "ethers": "^6.15.0"
     },
     "devDependencies": {
         "@nomicfoundation/hardhat-toolbox": "^4.0.0",
@@ -28,5 +30,8 @@
         "ts-node": ">=8.0.0",
         "typechain": "^8.3.0",
         "typescript": ">=4.5.0"
+    },
+    "engines": {
+        "node": ">=18.0.0"
     }
 }
