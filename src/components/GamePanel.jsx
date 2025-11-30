@@ -98,7 +98,8 @@ export default function GamePanel() {
   }
 
   async function submitMove() {
-    if (!contract) return alert("Connect wallet & set game ID");
+    if (!contract) return alert("Connect wallet");
+    if (!gameId) return alert("Enter game ID");
     if (move === null) return alert("Select a move first");
     if (!fhevmReady) return alert("FHEVM not ready yet. Please wait.");
 
