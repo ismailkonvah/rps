@@ -48,6 +48,8 @@ export default function GamePanel() {
 
     // Listen for finalization events
     // Listen for finalization events (might fail on some RPCs)
+    // Commented out to prevent "eth_newFilter not available" errors on free RPCs
+    /*
     try {
       ctr.on("GameFinalized", (gid, winnerAddr, result) => {
         setStatus(`Game #${gid.toString()} finalized: ${result} (${winnerAddr})`);
@@ -55,6 +57,7 @@ export default function GamePanel() {
     } catch (e) {
       console.warn("Could not subscribe to events (RPC limitation):", e);
     }
+    */
 
     setStatus("Connected: " + addr);
   }
