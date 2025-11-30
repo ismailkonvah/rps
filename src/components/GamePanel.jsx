@@ -47,9 +47,14 @@ export default function GamePanel() {
     setContract(ctr);
 
     // Listen for finalization events
-    ctr.on("GameFinalized", (gid, winnerAddr, result) => {
-      setStatus(`Game #${gid.toString()} finalized: ${result} (${winnerAddr})`);
-    });
+    // Listen for finalization events (might fail on some RPCs)
+    try {
+      ctr.on("GameFinalized", (gid, winnerAddr, result) => {
+        setStatus(`Game #${gid.toString()} finalized: ${result} (${winnerAddr})`);
+      });
+    } catch (e) {
+      console.warn("Could not subscribe to events (RPC limitation):", e);
+    }
 
     setStatus("Connected: " + addr);
   }
