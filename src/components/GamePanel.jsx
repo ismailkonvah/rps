@@ -117,15 +117,19 @@ export default function GamePanel() {
   }
 
   async function submitMove() {
+    console.log("submitMove called");
     if (!contract) return alert("Connect wallet");
     if (!gameId) return alert("Enter game ID");
     if (move === null) return alert("Select a move first");
     if (!fhevmReady) return alert("FHEVM not ready yet. Please wait.");
+    if (!CONTRACT_ADDRESS) return alert("Contract address not configured (VITE_CONTRACT_ADDRESS missing)");
 
     try {
+      console.log("Starting encryption...");
       setStatus("Encrypting move...");
       // Encrypt the move using FHEVM SDK
       const encryptedData = await encryptMove(move, CONTRACT_ADDRESS, account);
+      console.log("Encryption complete:", encryptedData);
 
       // Serialize to bytes for contract
       const serialized = serializeEncryptedData(encryptedData);
