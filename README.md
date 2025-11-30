@@ -6,11 +6,12 @@ A decentralized Rock Paper Scissors game using **Zama's FHEVM** for true privacy
 ## Table of Contents
 
 1. [Features](#features)
-2. [Prerequisites](#prerequisites)
-3. [Quick Start](#quick-start)
-4. [Deployment](#deployment)
-5. [Architecture](#architecture)
-6. [Troubleshooting](#troubleshooting)
+2. [Privacy & Architecture](#privacy--architecture)
+3. [Prerequisites](#prerequisites)
+4. [Quick Start](#quick-start)
+5. [Deployment](#deployment)
+6. [Smart Contract Details](#smart-contract-details)
+7. [Troubleshooting](#troubleshooting)
 
 ## Features
 
@@ -19,6 +20,55 @@ A decentralized Rock Paper Scissors game using **Zama's FHEVM** for true privacy
 - **Private Moves**: Moves encrypted client-side and remain private until finalization
 - **Automated Finalization**: Backend service automatically decrypts and finalizes games
 - **Modern UI**: React + Tailwind CSS + shadcn/ui
+
+## Privacy & Architecture
+
+### How FHE Ensures Privacy
+Unlike traditional "commit-reveal" schemes where players must manually reveal their moves, this game uses **Fully Homomorphic Encryption (FHE)** to ensure privacy without extra user steps.
+
+1. **Client-Side Encryption**: Your move (Rock/Paper/Scissors) is encrypted locally in your browser using Zama's SDK.
+2. **Encrypted Submission**: The *encrypted* move is sent to the smart contract. The contract *never* sees the raw move.
+3. **Private Storage**: The contract stores the encrypted moves. Even blockchain validators cannot see your choice.
+4. **Secure Decryption**: Only the authorized finalizer (using the Zama Gateway) can decrypt the moves to determine the winner.
+
+### System Architecture
+
+```mermaid
+graph TB
+    subgraph Client [Frontend (React)]
+        A[Player 1] -->|Select Move| B[Encrypt Locally]
+        B -->|Encrypted Move| C[Submit Transaction]
+    end
+
+    subgraph Blockchain [Sepolia Testnet]
+        C -->|Store Encrypted Move| D[Smart Contract]
+        D -->|Emit NeedsOffchainFinalize| E[Event Log]
+    end
+
+    subgraph Backend [Railway Finalizer]
+        E -->|Detect Event| F[Node.js Service]
+        F -->|Request Decryption| G[Zama Gateway]
+        G -->|Return Decrypted Moves| F
+        F -->|Compute Winner| H[Submit Result]
+    end
+
+    H -->|Update State| D
+```
+
+### Encryption Flow
+```
+User Input: Rock (0)
+   ↓
+FHE Encryption: Zama euint8 ciphertext
+   ↓
+Smart Contract: Stores ciphertext (e.g. 0x123...)
+   ↓
+Finalizer: Detects event, requests decryption via Gateway
+   ↓
+Decryption: Returns 0 (Rock)
+   ↓
+Logic: Rock vs Scissors -> Rock Wins
+```
 
 ## Prerequisites
 
@@ -92,68 +142,25 @@ The finalizer must run on a platform that supports long-running processes (Railw
    ```
 5. Deploy!
 
-The finalizer will automatically:
-- Listen for games needing finalization
-- Decrypt encrypted moves using FHEVM Gateway
-- Compute winner and submit result to contract
+## Smart Contract Details
 
-## Architecture
+**Contract Address**: `0x004510a8a91D7AedAd6eeB58C6D3c40Dc9578667`
+**Network**: Sepolia Testnet
 
-### System Flow
+### Key Functions
 
-```mermaid
-graph TB
-    A[Player 1] -->|Encrypt Move| B[FHEVM SDK]
-    C[Player 2] -->|Encrypt Move| B
-    B -->|Submit| D[Smart Contract]
-    D -->|Emit Event| E[Finalizer on Railway]
-    E -->|Decrypt via Gateway| F[Zama Gateway]
-    F -->|Decrypted Moves| E
-    E -->|Submit Winner| D
-    D -->|Update State| A
-    D -->|Update State| C
-```
+```solidity
+// Create a new game
+function createGame(uint256 wager) external payable returns (uint256)
 
-### Key Components
+// Join an existing game
+function joinGame(uint256 gameId) external payable
 
-**Frontend** (`src/`)
-- FHEVM SDK integration for encryption
-- WalletConnect + wagmi for wallet connection
-- React UI with game state management
+// Submit encrypted move
+function submitMove(uint256 gameId, bytes calldata encryptedMove) external
 
-**Smart Contract** (`backend/contracts/PrivateRPSFHE.sol`)
-- Stores encrypted moves on-chain
-- Emits `NeedsOffchainFinalize` when both players submit
-- Admin-only `finalizeResult` function
-
-**Finalizer** (`backend/offchain/finalizer.js`)
-- Listens for finalization events
-- Uses FHEVM Gateway API for decryption
-- Automatically submits results
-
-### FHEVM Integration
-
-**SDK Version:** `@zama-fhe/relayer-sdk` v0.3.0-6
-
-**Frontend Encryption:**
-```javascript
-import { createInstance, SepoliaConfig } from '@zama-fhe/relayer-sdk/web';
-
-const instance = await createInstance(SepoliaConfig);
-const input = instance.createEncryptedInput(contractAddress, userAddress);
-input.add8(move); // 0=Rock, 1=Paper, 2=Scissors
-const encrypted = await input.encrypt();
-```
-
-**Backend Decryption:**
-```javascript
-import { createInstance, SepoliaConfig } from '@zama-fhe/relayer-sdk/node';
-
-const instance = await createInstance(SepoliaConfig);
-const { publicKey, privateKey } = instance.generateKeypair();
-const eip712 = instance.createEIP712(publicKey, [contractAddress]);
-const signature = await signer.signTypedData(...);
-const decrypted = await instance.reencrypt(handle, privateKey, publicKey, signature, ...);
+// Finalize game (Admin only)
+function finalizeResult(uint256 gameId, uint8 winner) external
 ```
 
 ## Troubleshooting
@@ -170,11 +177,6 @@ const decrypted = await instance.reencrypt(handle, privateKey, publicKey, signat
 - Check wallet is on Sepolia network
 - Clear browser cache and reconnect
 
-**"Enter game ID" alert**
-- Game ID is displayed after creation
-- Make sure you created a game first
-- Check console logs for `Found GameID: X`
-
 ### Backend Issues
 
 **Finalizer not detecting games**
@@ -186,34 +188,6 @@ const decrypted = await instance.reencrypt(handle, privateKey, publicKey, signat
 - Check Railway logs for specific error
 - Verify SDK version is `0.3.0-6`
 - Ensure contract address is correct
-
-**"No decrypt method found"**
-- Update to latest SDK version
-- Use Gateway `reencrypt` API (not direct `decrypt`)
-
-### Common Errors
-
-| Error | Solution |
-|-------|----------|
-| `WASM file not found` | Copy `tfhe_bg.wasm` to `public/` folder |
-| `initSDK is not a function` | Remove `initSDK()` call in Node.js backend |
-| `contractAddresses.every is not a function` | Pass contract address as array: `[CONTRACT_ADDRESS]` |
-| `ambiguous primary types` | Remove `EIP712Domain` from types before signing |
-
-## Environment Variables
-
-### Frontend (`.env`)
-```env
-VITE_CONTRACT_ADDRESS=0x004510a8a91D7AedAd6eeB58C6D3c40Dc9578667
-VITE_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY
-```
-
-### Backend (`backend/.env`)
-```env
-RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY
-ADMIN_PRIVATE_KEY=0x...  # Admin wallet private key
-CONTRACT_ADDRESS=0x004510a8a91D7AedAd6eeB58C6D3c40Dc9578667
-```
 
 ## Tech Stack
 
@@ -229,15 +203,6 @@ CONTRACT_ADDRESS=0x004510a8a91D7AedAd6eeB58C6D3c40Dc9578667
 **Frontend**: https://rps-ebon-gamma.vercel.app  
 **Contract**: [0x004510a8a91D7AedAd6eeB58C6D3c40Dc9578667](https://sepolia.etherscan.io/address/0x004510a8a91D7AedAd6eeB58C6D3c40Dc9578667)
 
-## Future Enhancements
-
-- [ ] Bot player deployment to Railway
-- [ ] Tournament mode with multiple rounds
-- [ ] Game history and statistics
-- [ ] Real-time updates via WebSockets
-- [ ] Mainnet deployment
-- [ ] Mobile app (React Native)
-
 ## License
 
 MIT
@@ -245,13 +210,6 @@ MIT
 ## Contributing
 
 Pull requests welcome! Please open an issue first to discuss proposed changes.
-
-## Support
-
-For issues or questions:
-- Open a GitHub issue
-- Check existing issues for solutions
-- Review the troubleshooting section
 
 ---
 
