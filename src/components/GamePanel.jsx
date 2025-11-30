@@ -238,6 +238,7 @@ export default function GamePanel() {
               <button onClick={createGame} style={{ padding: 10, width: '100%', background: '#10b981', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>
                 🎮 Start Game vs Computer
               </button>
+              {gameId && <p style={{ textAlign: 'center', margin: '8px 0', fontWeight: 'bold' }}>Current Game ID: {gameId}</p>}
               {computerMove !== null && (
                 <div style={{ marginTop: 12, padding: 12, background: '#fef3c7', borderRadius: 8 }}>
                   <p style={{ margin: 0, fontSize: 14 }}>Computer chose: {getMoveEmoji(computerMove)}</p>
