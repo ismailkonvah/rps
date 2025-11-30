@@ -40,45 +40,39 @@ async function initFHEVM() {
 }
 
 /**
- * Decrypt a ciphertext using FHEVM SDK
- * @param {string} ciphertextHex - Hex string of encrypted data
- * @param {object} signer - Ethers signer with decryption permissions
- * @returns {Promise<number>} Decrypted value
+ * Decrypt an encrypted move handle using the Gateway
+ * @param {BigInt} handle - The encrypted handle from contract storage
+ * @param {object} signer - Ethers signer with decryption permissions  
+ * @returns {Promise<number>} Decrypted value (0, 1, or 2)
  */
-async function decryptMove(ciphertextHex, signer) {
+async function decryptMove(handle, signer) {
   const instance = await initFHEVM();
 
   try {
-    // Convert hex string to Uint8Array
-    const hex = ciphertextHex.startsWith('0x') ? ciphertextHex.slice(2) : ciphertextHex;
-    const ctBytes = new Uint8Array(hex.length / 2);
-    for (let i = 0; i < hex.length; i += 2) {
-      ctBytes[i / 2] = parseInt(hex.substr(i, 2), 16);
-    }
+    console.log("Decrypting handle:", handle.toString());
 
-    console.log("Decrypting ciphertext...");
+    // Generate EIP-712 signature for Gateway decryption request
+    const { publicKey, privateKey } = instance.generateKeypair();
+    const eip712 = instance.createEIP712(publicKey, CONTRACT_ADDRESS);
 
-    // Decrypt using FHEVM SDK
-    // Note: The exact method signature may vary based on SDK version
-    // Common patterns: decrypt(ciphertext, contractAddress, signer) or decrypt(ciphertext)
-    let decrypted;
+    const signature = await signer.signTypedData(
+      eip712.domain,
+      { Reencrypt: eip712.types.Reencrypt },
+      eip712.message
+    );
 
-    if (typeof instance.decrypt === 'function') {
-      // Try with contract address and signer
-      try {
-        decrypted = await instance.decrypt(ctBytes, CONTRACT_ADDRESS, signer);
-      } catch (e) {
-        // Try without contract address
-        decrypted = await instance.decrypt(ctBytes);
-      }
-    } else if (typeof instance.decrypt_uint8 === 'function') {
-      decrypted = await instance.decrypt_uint8(ctBytes);
-    } else {
-      throw new Error("No decrypt method found on FHEVM instance");
-    }
+    // Request reencryption from Gateway
+    const decrypted = await instance.reencrypt(
+      handle,
+      privateKey,
+      publicKey,
+      signature,
+      CONTRACT_ADDRESS,
+      signer.address
+    );
 
     console.log("Decrypted value:", decrypted);
-    return decrypted;
+    return Number(decrypted);
   } catch (error) {
     console.error("Decryption failed:", error);
     throw new Error(`Failed to decrypt move: ${error.message}`);
