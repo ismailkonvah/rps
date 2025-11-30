@@ -59,10 +59,20 @@ async function decryptMove(handle, signer) {
     // Remove EIP712Domain from types (ethers.js handles it separately)
     const { EIP712Domain, ...typesWithoutDomain } = eip712.types;
 
+    // Log the message to debug null values
+    console.log("EIP712 message:", JSON.stringify(eip712.message, null, 2));
+
+    // Ensure all message fields are valid (not null/undefined)
+    const message = {
+      ...eip712.message,
+      startTimestamp: eip712.message.startTimestamp || 0,
+      durationDays: eip712.message.durationDays || 0,
+    };
+
     const signature = await signer.signTypedData(
       eip712.domain,
       typesWithoutDomain,
-      eip712.message
+      message
     );
 
     // Request reencryption from Gateway
