@@ -20,11 +20,11 @@ export async function initFHEVM() {
   }
 
   try {
-    console.log('Initializing FHEVM SDK...');
-    // Initialize WASM module first
-    await initSDK();
-    console.log('SDK initialized, creating instance with SepoliaConfig...');
+    // Initialize FHEVM SDK
+    // Pass the path to the WASM file in public folder
+    await initSDK("/tfhe_bg.wasm");
 
+    // Create instance with SepoliaConfig
     fhevmInstance = await createInstance(SepoliaConfig);
     console.log('FHEVM instance initialized successfully');
     return fhevmInstance;
