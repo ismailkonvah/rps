@@ -68,16 +68,19 @@ export default function GamePanel() {
     const tx = await contract.createGame(0); // no wager
     const receipt = await tx.wait();
     // try to pull gameId from logs (Ethers v6)
+    console.log("Parsing logs for GameCreated event...");
     let gid;
     for (const log of receipt.logs) {
       try {
         const parsedLog = contract.interface.parseLog(log);
+        console.log("Parsed log:", parsedLog?.name, parsedLog?.args);
         if (parsedLog && parsedLog.name === "GameCreated") {
           gid = parsedLog.args[0].toString();
+          console.log("Found GameID:", gid);
           break;
         }
       } catch (e) {
-        // ignore logs that don't belong to this contract
+        console.log("Log parse error (ignoring):", e);
       }
     }
 
@@ -90,6 +93,7 @@ export default function GamePanel() {
         setTimeout(() => computerJoinGame(gid), 1000);
       }
     } else {
+      console.warn("GameCreated event not found in logs");
       setStatus("Game created (inspect tx logs)");
     }
   }
