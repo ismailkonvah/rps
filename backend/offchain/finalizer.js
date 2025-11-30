@@ -56,9 +56,12 @@ async function decryptMove(handle, signer) {
     const eip712 = instance.createEIP712(publicKey, [CONTRACT_ADDRESS]); // Pass as array
 
 
+    // Remove EIP712Domain from types (ethers.js handles it separately)
+    const { EIP712Domain, ...typesWithoutDomain } = eip712.types;
+
     const signature = await signer.signTypedData(
       eip712.domain,
-      eip712.types,  // Pass types directly, not wrapped
+      typesWithoutDomain,
       eip712.message
     );
 
