@@ -59,10 +59,21 @@ export default function GamePanel() {
     setStatus("Creating game...");
     const tx = await contract.createGame(0); // no wager
     const receipt = await tx.wait();
-    // try to pull gameId from event if emitted
-    const event = receipt.events?.find(e => e.event === "GameCreated");
-    if (event) {
-      const gid = event.args[0].toString();
+    // try to pull gameId from logs (Ethers v6)
+    let gid;
+    for (const log of receipt.logs) {
+      try {
+        const parsedLog = contract.interface.parseLog(log);
+        if (parsedLog && parsedLog.name === "GameCreated") {
+          gid = parsedLog.args[0].toString();
+          break;
+        }
+      } catch (e) {
+        // ignore logs that don't belong to this contract
+      }
+    }
+
+    if (gid) {
       setGameId(gid);
       setStatus(`Created game #${gid}`);
 
