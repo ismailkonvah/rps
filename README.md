@@ -1,266 +1,258 @@
-# Rock–Paper–Scissors — End-to-End Setup (Sepolia)
+# Rock Paper Scissors with Fully Homomorphic Encryption
 
 ## Overview
-This project implements a Rock Paper Scissors game leveraging Fully Homomorphic Encryption (FHE) concepts for privacy, integrated with Web3 technologies for decentralized gameplay. The frontend is built with React, `wagmi`, and WalletConnect for seamless wallet interactions, while the backend consists of a Solidity smart contract and an off-chain finalizer script.
+A decentralized Rock Paper Scissors game using **Zama's FHEVM** for true privacy-preserving gameplay on Sepolia testnet. Players submit encrypted moves that remain private until an off-chain finalizer decrypts them to determine the winner.
 
 ## Table of Contents
 
-1.  [Project Overview](#1-project-overview)
-2.  [Features](#2-features)
-3.  [Prerequisites](#3-prerequisites)
-4.  [Setup Guide](#4-setup-guide)
-    *   [4.1. Clone the Repository](#41-clone-the-repository)
-    *   [4.2. Frontend Setup](#42-frontend-setup)
-    *   [4.3. Backend Setup (Smart Contract)](#43-backend-setup-smart-contract)
-    *   [4.4. Backend Finalizer Setup](#44-backend-finalizer-setup)
-5.  [Usage](#5-usage)
-    *   [5.1. Running the Frontend](#51-running-the-frontend)
-    *   [5.2. Deploying the Smart Contract](#52-deploying-the-smart-contract)
-    *   [5.3. Running the Backend Finalizer](#53-running-the-backend-finalizer)
-6.  [Architecture](#6-architecture)
-7.  [Troubleshooting](#7-troubleshooting)
-8.  [Future Enhancements](#8-future-enhancements)
+1. [Features](#features)
+2. [Prerequisites](#prerequisites)
+3. [Quick Start](#quick-start)
+4. [Deployment](#deployment)
+5. [Architecture](#architecture)
+6. [Troubleshooting](#troubleshooting)
 
-## 1. Project Overview
+## Features
 
-This dApp allows two players to play Rock Paper Scissors where their moves are submitted encrypted to a smart contract using **Zama's FHEVM SDK** for real Fully Homomorphic Encryption on Sepolia testnet. An off-chain finalizer decrypts the moves using the FHEVM SDK and determines the winner, updating the game state on the blockchain. The frontend provides a modern UI for interacting with the game.
+- **True FHE Encryption**: Uses Zama's FHEVM SDK (`@zama-fhe/relayer-sdk` v0.3.0-6) for real Fully Homomorphic Encryption
+- **Web3 Wallet Integration**: WalletConnect support for MetaMask and mobile wallets
+- **Private Moves**: Moves encrypted client-side and remain private until finalization
+- **Automated Finalization**: Backend service automatically decrypts and finalizes games
+- **Modern UI**: React + Tailwind CSS + shadcn/ui
 
-## 2. Features
+## Prerequisites
 
-*   **Web3 Wallet Integration**: Connects to various wallets via WalletConnect (MetaMask, mobile wallets).
-*   **Real FHE Encryption**: Uses Zama's FHEVM SDK (`@zama-fhe/relayer-sdk`) for true Fully Homomorphic Encryption on Sepolia.
-*   **Private Moves**: Moves are encrypted client-side and remain private until decrypted by the authorized finalizer.
-*   **Smart Contract**: Solidity contract (`PrivateRPSFHE.sol`) manages game state and stores encrypted moves.
-*   **Off-chain Finalizer**: Node.js script with FHEVM SDK to decrypt moves and finalize results.
-*   **Computer Opponent (Optional)**: Play against an AI opponent if another player is not available.
-*   **Modern UI**: Built with React, Tailwind CSS, and `shadcn/ui` for a responsive and intuitive experience.
+- **Node.js**: v18.x or higher
+- **pnpm**: `npm install -g pnpm`
+- **Git**
+- **MetaMask** or WalletConnect-compatible wallet
+- **Sepolia ETH** for gas fees
 
-## 3. Prerequisites
+## Quick Start
 
-Before you begin, ensure you have the following installed:
-
-*   **Node.js**: v18.x or higher
-*   **pnpm**: `npm install -g pnpm`
-*   **Git**
-*   **MetaMask or a WalletConnect compatible wallet**
-*   **Hardhat or Foundry**: For smart contract development and deployment (e.g., `npm install -g hardhat`)
-
-## 4. Setup Guide
-
-### 4.1. Clone the Repository
+### 1. Clone and Install
 
 ```bash
-git clone <repository-url>
-cd private-rps
+git clone https://github.com/ismailkonvah/rps.git
+cd rps
+pnpm install
 ```
 
-### 4.2. Frontend Setup
+### 2. Configure Frontend
 
-1.  **Navigate to the frontend directory**:
-    ```bash
-    cd private-rps
-    ```
+Create `.env` in project root:
 
-2.  **Install dependencies**:
-    ```bash
-    pnpm install
-    ```
+```env
+VITE_CONTRACT_ADDRESS=0x004510a8a91D7AedAd6eeB58C6D3c40Dc9578667
+VITE_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY
+```
 
-3.  **Get a WalletConnect Project ID**: 
-    *   Go to [WalletConnect Cloud](https://cloud.walletconnect.com/).
-    *   Sign up/log in and create a new project to obtain your `projectId`.
+Get a WalletConnect Project ID from [WalletConnect Cloud](https://cloud.walletconnect.com/) and update `src/config/wagmi.js`:
 
-4.  **Configure WalletConnect**: Open `src/config/wagmi.js` and replace `YOUR_PROJECT_ID` with your actual WalletConnect Project ID.
+```javascript
+const projectId = 'YOUR_PROJECT_ID'
+```
 
-    ```javascript
-    // src/config/wagmi.js
-    const projectId = 'YOUR_PROJECT_ID' // <--- Update this line
-    ```
+### 3. Run Frontend
 
-### 4.3. Backend Setup (Smart Contract)
+```bash
+pnpm run dev
+```
 
-1.  **Navigate to the backend directory**:
-    ```bash
-    cd backend
-    ```
+Visit `http://localhost:5173` and connect your wallet.
 
-2.  **Install Hardhat (if not already installed)**:
-    ```bash
-    npm install -g hardhat
-    ```
+## Deployment
 
-3.  **Compile the contract**: This will generate the ABI file (`PrivateRPSFHE.json`) in the `artifacts` directory.
-    ```bash
-    solcjs --abi contracts/PrivateRPSFHE.sol -o artifacts/
-    ```
+### Smart Contract (Already Deployed)
 
-4.  **Deploy the contract**: You will need a Hardhat project setup. Create a deployment script (e.g., `scripts/deploy.js`):
-    ```javascript
-    // scripts/deploy.js
-    const hre = require("hardhat");
+Contract Address: `0x004510a8a91D7AedAd6eeB58C6D3c40Dc9578667` (Sepolia)
 
-    async function main() {
-      const [deployer] = await hre.ethers.getSigners();
-      console.log("Deploying contracts with the account:", deployer.address);
+To deploy your own:
 
-      const PrivateRPSFHE = await hre.ethers.getContractFactory("PrivateRPSFHE");
-      const privateRPSFHE = await PrivateRPSFHE.deploy(deployer.address); // Admin is the deployer
+```bash
+cd backend
+npm install
+npx hardhat run scripts/deploy.js --network sepolia
+```
 
-      await privateRPSFHE.waitForDeployment();
+### Backend Finalizer (Railway)
 
-      console.log("PrivateRPSFHE deployed to:", privateRPSFHE.target);
-    }
+The finalizer must run on a platform that supports long-running processes (Railway, Render, Fly.io, etc.).
 
-    main()
-      .then(() => process.exit(0))
-      .catch((error) => {
-        console.error(error);
-        process.exit(1);
-      });
-    ```
-    Run the deployment script on Sepolia:
-    ```bash
-    npx hardhat run scripts/deploy.js --network sepolia
-    ```
-    **Note down the deployed contract address.** This will be used for `VITE_CONTRACT_ADDRESS` in the frontend `.env` and `CONTRACT_ADDRESS` in the finalizer `.env`.
+**Railway Deployment:**
 
-### 4.4. Backend Finalizer Setup
+1. Go to [railway.app](https://railway.app) and sign in with GitHub
+2. Create New Project → Deploy from GitHub → Select `ismailkonvah/rps`
+3. **Settings** → Set Root Directory to `backend`
+4. **Variables** → Add:
+   ```
+   RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY
+   ADMIN_PRIVATE_KEY=0x...
+   CONTRACT_ADDRESS=0x004510a8a91D7AedAd6eeB58C6D3c40Dc9578667
+   ```
+5. Deploy!
 
-1.  **Navigate to the backend directory**:
-    ```bash
-    cd backend
-    ```
+The finalizer will automatically:
+- Listen for games needing finalization
+- Decrypt encrypted moves using FHEVM Gateway
+- Compute winner and submit result to contract
 
-2.  **Install dependencies for the finalizer**:
-    ```bash
-    npm install ethers dotenv
-    ```
+## Architecture
 
-3.  **Create `.env` file**: In the `backend` directory, create a `.env` file and add the following:
-    ```
-    RPC_URL="https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID" # Your Sepolia RPC URL
-    ADMIN_PRIVATE_KEY="0x..." # Private key of the contract deployer/admin
-    CONTRACT_ADDRESS="0x..." # Your deployed contract address
-    ZAMA_PUBLIC_KEY="0x..." # Zama FHE public key (hex string, if needed by backend SDK)
-    ```
-    *   `RPC_URL`: Your Sepolia RPC endpoint.
-    *   `ADMIN_PRIVATE_KEY`: **Crucially, use the private key for the account that deployed the contract.** This account will act as the admin and call `finalizeResult` on the contract. **NEVER use a private key from a mainnet account for testing.**
-    *   `CONTRACT_ADDRESS`: The address of your deployed `PrivateRPSFHE` contract.
-    *   `ZAMA_PUBLIC_KEY`: The public key required by the Zama FHE SDK for decryption/homomorphic operations on the backend.
-
-## Usage
-
-### 1. Running the Frontend
-
-1.  Ensure you are in the project root directory (`private-rps`).
-2.  Start the development server:
-    ```bash
-    pnpm run dev --host
-    ```
-3.  Open your browser to `http://localhost:5173`.
-4.  Connect your wallet (e.g., MetaMask configured for Sepolia).
-5.  **Choose Opponent**: Select whether to play against another player or the computer. If playing against the computer, click "Start Game vs Computer". If playing against a player, you can create a game or join an existing one.
-6.  Submit your encrypted moves.
-
-### 2. Deploying the Smart Contract
-
-Follow the steps in [Backend Setup (Smart Contract)](#3-backend-setup-smart-contract).
-
-### 3. Running the Backend Finalizer
-
-1.  Ensure the smart contract is deployed and its address and the admin private key are configured in `backend/.env`.
-2.  Navigate to the backend directory:
-    ```bash
-    cd backend
-    ```
-3.  Run the finalizer script:
-    ```bash
-    node offchain/finalizer.js
-    ```
-    This script will start listening for `NeedsOffchainFinalize` events from your deployed contract and automatically finalize games.
-
-## 6. Architecture
-
-### System Architecture
+### System Flow
 
 ```mermaid
 graph TB
-    A[Player 1 Browser] -->|Encrypt Move| B[FHEVM SDK Frontend]
-    C[Player 2 Browser] -->|Encrypt Move| B
-    B -->|Submit Encrypted Moves| D[Smart Contract on Sepolia]
-    D -->|Emit NeedsOffchainFinalize| E[Backend Finalizer]
-    E -->|FHEVM SDK Decrypt| F[Decrypted Moves]
-    F -->|Compute Winner| G[Submit Result]
-    G -->|finalizeResult| D
-    D -->|Emit GameFinalized| A
-    D -->|Emit GameFinalized| C
+    A[Player 1] -->|Encrypt Move| B[FHEVM SDK]
+    C[Player 2] -->|Encrypt Move| B
+    B -->|Submit| D[Smart Contract]
+    D -->|Emit Event| E[Finalizer on Railway]
+    E -->|Decrypt via Gateway| F[Zama Gateway]
+    F -->|Decrypted Moves| E
+    E -->|Submit Winner| D
+    D -->|Update State| A
+    D -->|Update State| C
 ```
 
 ### Key Components
 
-1. **Frontend FHEVM SDK** (`src/fhe/fheSdk.js`)
-   - Uses `@zama-fhe/relayer-sdk` with `SepoliaConfig`
-   - Encrypts player moves (0=Rock, 1=Paper, 2=Scissors) using `encrypt_uint8`
-   - Serializes ciphertext for contract submission
-   - Automatically configured for Sepolia testnet
+**Frontend** (`src/`)
+- FHEVM SDK integration for encryption
+- WalletConnect + wagmi for wallet connection
+- React UI with game state management
 
-2. **Smart Contract** (`backend/contracts/PrivateRPSFHE.sol`)
-   - Stores encrypted moves as `bytes`
-   - Emits `NeedsOffchainFinalize` event when both players submit
-   - Accepts winner from authorized admin via `finalizeResult`
+**Smart Contract** (`backend/contracts/PrivateRPSFHE.sol`)
+- Stores encrypted moves on-chain
+- Emits `NeedsOffchainFinalize` when both players submit
+- Admin-only `finalizeResult` function
 
-3. **Backend Finalizer** (`backend/offchain/finalizer.js`)
-   - Listens for `NeedsOffchainFinalize` events
-   - Uses FHEVM SDK to decrypt both moves
-   - Computes winner using RPS logic
-   - Submits result back to contract
-
-4. **FHEVM Coprocessor**
-   - Zama's infrastructure on Sepolia (configured via `SepoliaConfig`)
-   - Handles FHE operations (encryption/decryption)
-   - Gateway and KMS automatically configured
+**Finalizer** (`backend/offchain/finalizer.js`)
+- Listens for finalization events
+- Uses FHEVM Gateway API for decryption
+- Automatically submits results
 
 ### FHEVM Integration
 
-**Frontend:**
-- Package: `@zama-fhe/relayer-sdk` v0.2.0
-- Configuration: `SepoliaConfig` (automatic setup)
-- Functions: `initFHEVM()`, `encryptMove()`, `serializeEncryptedData()`
+**SDK Version:** `@zama-fhe/relayer-sdk` v0.3.0-6
 
-**Backend:**
-- Package: `@zama-fhe/relayer-sdk` v0.2.0
-- Configuration: `SepoliaConfig` (automatic setup)
-- Functions: `initFHEVM()`, `decryptMove()`
+**Frontend Encryption:**
+```javascript
+import { createInstance, SepoliaConfig } from '@zama-fhe/relayer-sdk/web';
 
-**Environment Variables:**
-```env
-# Frontend (.env)
-VITE_CONTRACT_ADDRESS=<deployed_contract_address>
-VITE_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY
-
-# Backend (backend/.env)
-RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY
-ADMIN_PRIVATE_KEY=0x...
-CONTRACT_ADDRESS=<deployed_contract_address>
+const instance = await createInstance(SepoliaConfig);
+const input = instance.createEncryptedInput(contractAddress, userAddress);
+input.add8(move); // 0=Rock, 1=Paper, 2=Scissors
+const encrypted = await input.encrypt();
 ```
 
-## 7. Troubleshooting
+**Backend Decryption:**
+```javascript
+import { createInstance, SepoliaConfig } from '@zama-fhe/relayer-sdk/node';
 
-*   **`sh: pnpm: command not found`**: Ensure `pnpm` is installed globally (`npm install -g pnpm`).
-*   **`sh: solcjs: command not found`**: Ensure `solc` is installed globally (`npm install -g solc`).
-*   **WalletConnect Modal not appearing**: Check your `projectId` in `src/config/wagmi.js`. Ensure your dApp is served over HTTPS in a production environment.
-*   **Contract deployment issues**: Verify your Hardhat setup, network configuration, and ensure your deployer account has sufficient funds on Sepolia.
-*   **Backend Finalizer errors**: Double-check the `ADMIN_PRIVATE_KEY`, `CONTRACT_ADDRESS`, and `RPC_URL` in `backend/.env`. Ensure the admin account has funds to pay for gas for `finalizeResult` transactions.
-*   **FHEVM initialization failed**: Check browser console for detailed errors. Ensure `@zama-fhe/relayer-sdk` is installed and you're connected to Sepolia network.
-*   **Decryption failed in backend**: Verify the ciphertext format matches SDK expectations. Check that the admin wallet has proper permissions and Sepolia ETH.
-*   **"FHEVM not ready yet"**: Wait for FHEVM initialization to complete (shown in status message). This usually takes a few seconds on first load.
+const instance = await createInstance(SepoliaConfig);
+const { publicKey, privateKey } = instance.generateKeypair();
+const eip712 = instance.createEIP712(publicKey, [contractAddress]);
+const signature = await signer.signTypedData(...);
+const decrypted = await instance.reencrypt(handle, privateKey, publicKey, signature, ...);
+```
 
-## 8. Future Enhancements
+## Troubleshooting
 
-*   **Enhanced FHE Operations**: Explore homomorphic computation directly on encrypted values without decryption.
-*   **Multi-round Tournaments**: Support for tournament-style gameplay with multiple rounds.
-*   **Improved Game State Management**: Implement real-time updates and more robust error handling for game states.
-*   **Advanced UI/UX**: Further refine the user interface with animations, game history, and player statistics.
-*   **Testing**: Add comprehensive unit and integration tests for both frontend and backend components.
-*   **Mainnet Deployment**: Deploy to Ethereum mainnet with production-grade security and optimizations.
+### Frontend Issues
 
+**"FHEVM not ready yet"**
+- Wait a few seconds for FHEVM initialization
+- Check browser console for errors
+- Ensure you're on Sepolia network
+
+**WalletConnect not working**
+- Verify `projectId` in `src/config/wagmi.js`
+- Check wallet is on Sepolia network
+- Clear browser cache and reconnect
+
+**"Enter game ID" alert**
+- Game ID is displayed after creation
+- Make sure you created a game first
+- Check console logs for `Found GameID: X`
+
+### Backend Issues
+
+**Finalizer not detecting games**
+- Check Railway logs for "Listening for events"
+- Verify environment variables are set
+- Ensure admin wallet has Sepolia ETH
+
+**Decryption failed**
+- Check Railway logs for specific error
+- Verify SDK version is `0.3.0-6`
+- Ensure contract address is correct
+
+**"No decrypt method found"**
+- Update to latest SDK version
+- Use Gateway `reencrypt` API (not direct `decrypt`)
+
+### Common Errors
+
+| Error | Solution |
+|-------|----------|
+| `WASM file not found` | Copy `tfhe_bg.wasm` to `public/` folder |
+| `initSDK is not a function` | Remove `initSDK()` call in Node.js backend |
+| `contractAddresses.every is not a function` | Pass contract address as array: `[CONTRACT_ADDRESS]` |
+| `ambiguous primary types` | Remove `EIP712Domain` from types before signing |
+
+## Environment Variables
+
+### Frontend (`.env`)
+```env
+VITE_CONTRACT_ADDRESS=0x004510a8a91D7AedAd6eeB58C6D3c40Dc9578667
+VITE_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY
+```
+
+### Backend (`backend/.env`)
+```env
+RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY
+ADMIN_PRIVATE_KEY=0x...  # Admin wallet private key
+CONTRACT_ADDRESS=0x004510a8a91D7AedAd6eeB58C6D3c40Dc9578667
+```
+
+## Tech Stack
+
+- **Frontend**: React, Vite, Tailwind CSS, shadcn/ui
+- **Web3**: wagmi, viem, ethers.js v6, WalletConnect
+- **FHE**: Zama FHEVM SDK v0.3.0-6
+- **Smart Contract**: Solidity, Hardhat
+- **Backend**: Node.js, ethers.js
+- **Deployment**: Vercel (frontend), Railway (finalizer)
+
+## Live Demo
+
+**Frontend**: https://rps-ebon-gamma.vercel.app  
+**Contract**: [0x004510a8a91D7AedAd6eeB58C6D3c40Dc9578667](https://sepolia.etherscan.io/address/0x004510a8a91D7AedAd6eeB58C6D3c40Dc9578667)
+
+## Future Enhancements
+
+- [ ] Bot player deployment to Railway
+- [ ] Tournament mode with multiple rounds
+- [ ] Game history and statistics
+- [ ] Real-time updates via WebSockets
+- [ ] Mainnet deployment
+- [ ] Mobile app (React Native)
+
+## License
+
+MIT
+
+## Contributing
+
+Pull requests welcome! Please open an issue first to discuss proposed changes.
+
+## Support
+
+For issues or questions:
+- Open a GitHub issue
+- Check existing issues for solutions
+- Review the troubleshooting section
+
+---
+
+Built with ❤️ using Zama FHEVM
