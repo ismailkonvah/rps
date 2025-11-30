@@ -88,28 +88,14 @@ export default function GamePanel() {
       setGameId(gid);
       setStatus(`Created game #${gid}`);
 
-      // If playing against computer, automatically join as computer
-      if (opponentMode === "computer") {
-        setTimeout(() => computerJoinGame(gid), 1000);
-      }
+      // Backend bot will automatically join if running
     } else {
       console.warn("GameCreated event not found in logs");
       setStatus("Game created (inspect tx logs)");
     }
   }
 
-  async function computerJoinGame(gid) {
-    if (!contract) return;
-    try {
-      setStatus("Computer is joining the game...");
-      const tx = await contract.joinGame(gid);
-      await tx.wait();
-      setStatus("Computer joined! Waiting for your move...");
-    } catch (error) {
-      console.error("Computer join error:", error);
-      setStatus("Computer failed to join. You can play with another player.");
-    }
-  }
+
 
   async function joinGame() {
     if (!contract) return alert("Connect wallet first");
@@ -144,37 +130,14 @@ export default function GamePanel() {
       await tx.wait();
       setStatus("Move submitted (tx mined). Waiting for finalization...");
 
-      // If playing against computer, submit computer's move after player's move
-      if (opponentMode === "computer") {
-        setTimeout(() => submitComputerMove(), 1500);
-      }
+      // Backend bot will automatically play if running
     } catch (error) {
       console.error("Submit move error:", error);
       setStatus(`Error: ${error.message}`);
     }
   }
 
-  async function submitComputerMove() {
-    if (!contract) return;
-    try {
-      // Generate random move for computer (0, 1, or 2)
-      const randomMove = Math.floor(Math.random() * 3);
-      setComputerMove(randomMove);
-      setStatus("Computer is making its move...");
 
-      // Encrypt computer's move
-      const encryptedData = await encryptMove(randomMove, CONTRACT_ADDRESS, account);
-      const serialized = serializeEncryptedData(encryptedData);
-      const encHex = ethers.hexlify(serialized);
-
-      const tx = await contract.submitMove(gameId, encHex);
-      await tx.wait();
-      setStatus("Computer move submitted! Waiting for finalization...");
-    } catch (error) {
-      console.error("Computer move error:", error);
-      setStatus("Computer failed to submit move.");
-    }
-  }
 
   const getMoveEmoji = (moveId) => {
     const moves = ['✊ Rock', '✋ Paper', '✌️ Scissors'];
