@@ -9,7 +9,7 @@ const projectId = '3d360c6f42172d7b9ed23d197f26c31e'
 const metadata = {
   name: 'Rock Paper Scissors',
   description: 'A private Rock Paper Scissors game using FHE',
-  url: 'https://private-rps.example.com',
+  url: 'https://rps-ebon-gamma.vercel.app',
   icons: ['https://avatars.githubusercontent.com/u/37784886']
 }
 
@@ -18,7 +18,7 @@ export const config = createConfig({
   chains: [mainnet, sepolia],
   transports: {
     [mainnet.id]: http(),
-    [sepolia.id]: http(),
+    [sepolia.id]: http(import.meta.env.VITE_RPC_URL),
   },
   connectors: [
     walletConnect({ projectId, metadata, showQrModal: false }),
