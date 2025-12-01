@@ -1,7 +1,7 @@
 // src/components/GamePanel.jsx
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import { useAccount } from "wagmi";
+import { useAccount, useDisconnect } from "wagmi";
 import ContractAbi from "../contract/PrivateRPSFHE.json";
 import { initFHEVM, encryptMove, serializeEncryptedData } from "../fhe/fheSdk";
 import HowToPlay from "./HowToPlay";
@@ -9,7 +9,8 @@ import HowToPlay from "./HowToPlay";
 const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS;
 
 export default function GamePanel() {
-  const { address: wagmiAddress } = useAccount();
+  const { address: wagmiAddress, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
   const [account, setAccount] = useState("");
   const [gameId, setGameId] = useState("");
   const [move, setMove] = useState(null); // 0 rock,1 paper,2 scissors
@@ -35,18 +36,33 @@ export default function GamePanel() {
     })();
   }, []);
 
-  async function connectWallet() {
-    if (!window.ethereum) return alert("Install MetaMask or use WalletConnect");
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
-    const signer = await provider.getSigner();
-    const addr = await signer.getAddress();
-    setAccount(addr);
+  // Sync Wagmi state with local state and setup Ethers
+  useEffect(() => {
+    async function setupWallet() {
+      if (isConnected && wagmiAddress) {
+        setAccount(wagmiAddress);
+        setStatus("Connected: " + wagmiAddress);
 
-    // wire contract
-    const ctr = new ethers.Contract(CONTRACT_ADDRESS, ContractAbi, signer);
-    setContract(ctr);
+        if (!window.ethereum) return;
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
 
+        // wire contract
+        const ctr = new ethers.Contract(CONTRACT_ADDRESS, ContractAbi, signer);
+        setContract(ctr);
+
+        // Setup listeners
+        setupEventListeners(ctr);
+      } else {
+        setAccount("");
+        setContract(null);
+        setStatus("Please connect your wallet");
+      }
+    }
+    setupWallet();
+  }, [isConnected, wagmiAddress]);
+
+  function setupEventListeners(ctr) {
     // Listen for NeedsOffchainFinalize event
     try {
       ctr.on("NeedsOffchainFinalize", (gid, encMove1, encMove2) => {
@@ -69,8 +85,19 @@ export default function GamePanel() {
     } catch (e) {
       console.warn("Could not subscribe to GameFinalized (RPC limitation):", e);
     }
+  }
 
-    setStatus("Connected: " + addr);
+  async function connectWallet() {
+    // Wagmi's Web3Modal handles connection via the hook, but if we need a manual trigger:
+    // The button in UI should trigger Web3Modal. 
+    // Since we are using wagmi hooks, we rely on the provider to handle connection UI.
+    // However, for this simple implementation, we can just use the standard window.ethereum request 
+    // if the user isn't using the Web3Modal button.
+    // BUT, better to rely on the hook.
+    // For now, let's keep the manual connect for non-modal users or just rely on the hook's state.
+    if (!window.ethereum) return alert("Install MetaMask or use WalletConnect");
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
   }
 
   async function createGame() {
@@ -161,6 +188,27 @@ export default function GamePanel() {
       <div style={{ width: 420, padding: 24, borderRadius: 16, background: 'white', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', margin: '40px auto' }}>
         <h2 style={{ margin: 0 }}>🔒 Private Rock–Paper–Scissors</h2>
         <p style={{ color: '#374151' }}>{status}</p>
+
+        {account && (
+          <div style={{ position: 'absolute', top: 20, right: 20 }}>
+            <button
+              onClick={() => disconnect()}
+              style={{
+                padding: '8px 16px',
+                background: '#ef4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: 8,
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: 14,
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              }}
+            >
+              Disconnect {account.slice(0, 6)}...
+            </button>
+          </div>
+        )}
 
         {!account ? (
           <button onClick={connectWallet} style={{ padding: 10, background: '#7c3aed', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' }}>Connect Wallet</button>
