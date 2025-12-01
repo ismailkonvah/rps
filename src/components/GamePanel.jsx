@@ -185,7 +185,7 @@ export default function GamePanel() {
   return (
     <>
       <HowToPlay />
-      <div style={{ width: 420, padding: 24, borderRadius: 16, background: 'white', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', margin: '40px auto' }}>
+      <div style={{ position: 'relative', width: 420, padding: 24, borderRadius: 16, background: 'white', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', margin: '40px auto' }}>
         <h2 style={{ margin: 0 }}>🔒 Private Rock–Paper–Scissors</h2>
         <p style={{ color: '#374151' }}>{status}</p>
 
